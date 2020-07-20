@@ -47,7 +47,19 @@
       </div>
       <div id="contacts">
         <ul>
-          <li class="contact">
+          {% for chat in filtered_chats %}
+            <li class="contact">
+              <div class="wrap">
+                <span class="contact-status online"></span>
+                <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" />
+                <div class="meta">
+                  <p class="name">{{ chat.id }}</p>
+                  <p class="preview">You just got LITT up, Mike.</p>
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+          <!-- <li class="contact">
             <div class="wrap">
               <span class="contact-status online"></span>
               <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" />
@@ -66,7 +78,7 @@
                 <p class="preview">Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
               </div>
             </div>
-          </li>
+          </li> -->
         </ul>
       </div>
       <div id="bottom-bar">
@@ -119,7 +131,7 @@
         '/ws/chat/' + roomName + '/');
 
     chatSocket.onopen = function(e) {
-      fetchMessages();
+      fetchMessages(username, roomName);
     }
 
     chatSocket.onmessage = function(e) {
@@ -149,14 +161,21 @@
         chatSocket.send(JSON.stringify({
             'command': 'new_message',
             'message': message,
-            'from': username
+            'from': username,
+            'room_name': roomName,
         }));
 
         messageInputDom.value = '';
     };
 
-    function fetchMessages() {
-      chatSocket.send(JSON.stringify({'command': 'fetch_messages' }));
+    document.getElementById('contacts').onclick = function(e) {
+      
+        // var roomName = document.querySelector('#room-name-input').value;
+        window.location.pathname = "/chat/" + roomName + "/";
+    };
+
+    function fetchMessages(username, roomName) {
+      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName}));
     }
 
     function createMessage(data) {
