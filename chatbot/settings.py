@@ -31,7 +31,6 @@ ALLOWED_HOSTS = []
 # LOGIN_URL = "/"
 LOGIN_REDIRECT_URL = "/chat/"
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -120,13 +118,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

@@ -53,8 +53,13 @@
                 <span class="contact-status online"></span>
                 <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" />
                 <div class="meta">
-                  <p class="name">{{ chat.id }}</p>
-                  <p class="preview">You just got LITT up, Mike.</p>
+                  {% for p in chat.other_participants %}
+                  {% if p == author %}
+                  {% else %}
+                  <p class="name">{{p}}</p>
+                  {% endif %}
+                  {% endfor %}
+                  <p class="preview">{{ chat.most_recent_message }}</p>
                 </div>
               </div>
             </li>
@@ -170,22 +175,24 @@
 
     document.getElementById('contacts').onclick = function(e) {
       
-        // var roomName = document.querySelector('#room-name-input').value;
-        window.location.pathname = "/chat/" + roomName + "/";
-    };
+      // var roomName = document.querySelector('#room-name-input').value;
+      window.location.pathname = "/chat/" + roomName + "/";
+  };
 
     function fetchMessages(username, roomName) {
-      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName}));
+      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName }));
     }
 
     function createMessage(data) {
       var author = data['author'];
       var msgListTag = document.createElement('li');
       var imgTag = document.createElement('img');
-      var pTag = document.createElement('p');
-      pTag.textContent = data.content;
+      var pTag =  document.createElement('p');
+      // var msg_timestamp = "<html><body><small>" + data.timestamp + "</small></body></html>";
+      pTag.innerText = data.content + "\r\n" + data.timestamp;
+      // $('p').append(msg_timestamp);
+      // $('p').append(JSON.stringify(msg_timestamp));
       imgTag.src = 'http://emilcarlsson.se/assets/mikeross.png';
-
       if (author === username) {
         msgListTag.className = 'sent';
       } else {
@@ -194,6 +201,7 @@
       msgListTag.appendChild(imgTag);
       msgListTag.appendChild(pTag);
       document.querySelector('#chat-log').appendChild(msgListTag);
+      document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
 
 </script>

@@ -1,10 +1,12 @@
+from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
 import json
-from .models import Chat, Contact, Message
+from .models import Message, Chat, Contact
 from django.contrib.auth import get_user_model
-from django.http import HttpResponseRedirect
+from datetime import datetime
 
 User = get_user_model()
 
@@ -23,32 +25,95 @@ def index(request):
         'username': mark_safe(json.dumps(request.user.username)),
         'filtered_chats': chats,
     }
-
     return render(request, 'chat/index.html', context=context)
 
 def get_user_contact(username):
     user = get_object_or_404(User, username=username)
     return get_object_or_404(Contact, user=user)
 
+# def check_profile(func):
+#     def decorator(func):
+#     # @wraps(func)
+#         def wrapper(arg_1, arg_2):
+#             context = {
+#             'room_name_json': mark_safe(json.dumps(arg_2)),
+#             }
+#             requested_chat = Chat.objects.get(id=arg_2)
+#             query_participants = requested_chat.participants.all()
+#             count = 0
+#             for participant in query_participants:
+#                 user = request.user.username
+#                 participant_name = participant.user.username
+#                 if user == participant_name:
+#                     count += 1
+#             if count==0:
+#                 logout(request)
+#                 return HttpResponseRedirect('/accounts/logout/')
+#             return wrapper
+#         return decorator
+
+def check_profile(func):
+    def wrapper(request, room_name):
+        context = {
+        'room_name_json': mark_safe(json.dumps(room_name)),
+        }
+        requested_chat = Chat.objects.get(id=room_name)
+        query_participants = requested_chat.participants.all()
+        count = 0
+        for participant in query_participants:
+            user = request.user.username
+            participant_name = participant.user.username
+            if user == participant_name:
+                count += 1
+        if count==0:
+            return HttpResponseRedirect('/accounts/logout/')
+        
+        return func(request, room_name)
+    return wrapper
+
 @login_required
+@check_profile
 def room(request, room_name):
 
     queryset = Chat.objects.all()
-    print(queryset)
     author = request.user.username
     contact = get_user_contact(author)
     queryset = contact.chats.all()
-    chats = queryset.values()
 
+    msg_list= []
 
+    for chat in queryset:
+        msg_list = chat.messages.order_by('-timestamp').all()
+        print(msg_list)
+        last_msg_author = msg_list[0]
+        last_msg = last_msg_author.content
+        print(last_msg)
+    
     context = {
         'room_name_json': mark_safe(json.dumps(room_name)),
         'username': mark_safe(json.dumps(request.user.username)),
-        'filtered_chats': chats,
-
+        'filtered_chats': queryset,
+        'author': author,
+        'messages': msg_list
     }
 
     return render(request, 'chat/room.html', context=context)
+
+# def room(request, room_name):
+#     queryset = Chat.objects.all()
+#     author = request.user.username
+#     contact = get_user_contact(author)
+#     queryset = contact.chats.all()
+#     chats = queryset.values()
+
+#     context = {
+#         'room_name_json': mark_safe(json.dumps(room_name)),
+#         'username': mark_safe(json.dumps(request.user.username)),
+#         'filtered_chats': chats,
+#     }
+
+#     return render(request, 'chat/room.html', context=context)
+
 
 def get_last_10_messages(room_name):
     chat = get_object_or_404(Chat, id=room_name)
@@ -56,6 +121,3 @@ def get_last_10_messages(room_name):
 
 def get_current_chat(room_name):
     return get_object_or_404(Chat, id=room_name)
-
-
-

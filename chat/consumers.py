@@ -28,10 +28,10 @@ class ChatConsumer(WebsocketConsumer):
         current_chat = get_current_chat(data['room_name'])
         current_chat.messages.add(message)
         current_chat.save()
-        
+
         content = {
             'command': 'new_message',
-            'message': self.message_to_json(message)
+            'message': self.message_to_json(message),
         }
         return self.send_chat_message(content)
 
@@ -55,15 +55,23 @@ class ChatConsumer(WebsocketConsumer):
     }
 
     def connect(self):
+        self.user = self.scope["user"]
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
 
+        if self.user.is_authenticated: # also you can add more restrictions here
+            async_to_sync(self.channel_layer.group_add)(
+                self.room_group_name,
+                self.channel_name
+            )
+            self.accept()
+
         # Join room group
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name,
-            self.channel_name
-        )
-        self.accept()
+        # async_to_sync(self.channel_layer.group_add)(
+        #     self.room_group_name,
+        #     self.channel_name
+        # )
+        # self.accept()
 
     #Leave room group
     def disconnect(self, close_code):
