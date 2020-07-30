@@ -1,0 +1,72 @@
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet/less" type="text/css" href="advisor.less" />
+      <!-- less -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/3.9.0/less.min.js" ></script>
+    <title>Document</title>
+</head>
+<body>
+    
+  
+<div class="dropdown-menu dropdown-menu-right" 
+aria-labelledby="dd3">                
+  <div class="avatar-upload dropdown-item dp2 cursor-default">
+      <div class="avatar-edit">
+      <input type='file' id="imageUpload" accept=".png, .jpg, .jpeg" />
+      <label for="imageUpload"></label>
+      </div>
+      <div class="avatar-preview">
+      <div class="imagePreview" style="background-image: url(
+          {% if advisor.profile_photo_advisor %}
+          {{ advisor.profile_photo_advisor.url }}
+          {% else %}
+          {% static 'svg/a-icon.svg' %}
+          {% endif %}
+          );">
+      </div>
+      </div>
+      <div class="text-center mt-2">{{ advisor.advisor_user.first_name }} {{ advisor.advisor_user.last_name }}</div>
+  </div>
+</div>
+
+
+</body>
+
+<script>
+    function readURL(input) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var result = e.target.result;
+        var url = "{% url 'profile_photo_advisor' %}"
+        var fileName = '{{ user.id }}' + '_apfp.' + input.files[0].name.split('.').pop();
+        var fd = new FormData();
+        fd.append("file", input.files[0], fileName);
+        fd.append("csrfmiddlewaretoken", '{{ csrf_token }}');
+        $.ajax({   
+          type: "POST",                    
+          url: url,                    
+          data: fd,
+          cache: false,
+          contentType: false, // Must put to parse csrf_token via ajax
+          processData: false, // Must put to parse csrf_token via ajax
+          success: function (data) {
+          }
+        });
+        $('.imagePreview').css('background-image', 'url('+e.target.result +')');
+        $('.imagePreview').hide();
+        $('.imagePreview').fadeIn(650);
+      }
+      reader.readAsDataURL(input.files[0]);
+      }
+    }
+    $("#imageUpload").change(function() {
+        readURL(this);
+    });
+</script>
+
+
+</html>
