@@ -5,6 +5,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
 import json
 from .models import Message, Chat, Contact
+# from .forms import DocumentForm
 from django.contrib.auth import get_user_model
 from datetime import datetime
 
@@ -84,10 +85,8 @@ def room(request, room_name):
 
     for chat in queryset:
         msg_list = chat.messages.order_by('-timestamp').all()
-        print(msg_list)
         last_msg_author = msg_list[0]
         last_msg = last_msg_author.content
-        print(last_msg)
     
     context = {
         'room_name_json': mark_safe(json.dumps(room_name)),
@@ -117,7 +116,40 @@ def room(request, room_name):
 
 def get_last_10_messages(room_name):
     chat = get_object_or_404(Chat, id=room_name)
-    return chat.messages.order_by('-timestamp').all()[:10]
+    return chat.messages.order_by('-timestamp').all()
 
 def get_current_chat(room_name):
     return get_object_or_404(Chat, id=room_name)
+
+# def image_view(request):
+#     # Handle file upload
+#     print('success')
+#     if request.method == 'POST':
+#         form = DocumentForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             newdoc = Document(docfile = request.FILES['docfile'])
+#             newdoc.save()
+#             return redirect('success') 
+#     else: 
+#         form = DocumentForm() 
+#     return render(request, 'room.html', {'form' : form}) 
+  
+  
+# def success(request): 
+#     return HttpResponse('successfully uploaded') 
+
+def profile_photo(request):
+    data=request.FILES.get('file')
+
+    author = request.user.username
+    if author.profile_photo:
+        authpath = author.profile_photo.url.split(settings.MEDIA_URL)
+        os.remove(os.path.join(settings.MEDIA_ROOT,authpath[1]))
+    #data.name = str(request.user.id) + "_apfp"
+    author.profile_photo=data
+    author.save()
+
+    data = {
+        'ok' : 'ok',
+    }
+    return JsonResponse(data)
