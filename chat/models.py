@@ -1,8 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.core.files.storage import FileSystemStorage
 
 # Create your models here.
 User = get_user_model()
+
+# class Document(models.Model):
+#     # docfile = models.FileField(upload_to='documents/')
+#     name = models.CharField(max_length=50) 
+#     docimage = models.ImageField(upload_to='images/')
 
 class Contact(models.Model):
     user = models.ForeignKey(User, related_name='friends', on_delete=models.CASCADE)
@@ -24,6 +30,8 @@ class Message(models.Model):
 class Chat(models.Model):
     participants = models.ManyToManyField(Contact, related_name='chats')
     messages = models.ManyToManyField(Message, blank=True)
+    msg_file = models.FileField(blank=True,null=True,
+        upload_to='profilepic',storage=FileSystemStorage())
 
     def __str__(self):
         return "{}".format(self.pk) 

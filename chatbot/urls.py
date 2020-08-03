@@ -14,11 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf.urls import include
+from django.conf.urls.static import static
+from django.conf import settings
 from django.urls import path
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from chat.views import login_redirect
-from chat.views import check_profile
+from chat.views import *
 
 urlpatterns = [
     path('chat/', include('chat.urls')),
@@ -26,6 +27,6 @@ urlpatterns = [
     path('', login_redirect, name='login_redirect'),
     path('', check_profile, name='check_profile'),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
-]
+    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'), 
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

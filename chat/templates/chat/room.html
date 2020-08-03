@@ -20,7 +20,29 @@
     <div id="sidepanel">
       <div id="profile">
         <div class="wrap">
-          <img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" />
+          <!-- <img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" /> -->
+          <!-- <img id="profile-img" class="online" alt="" /> -->
+          <!-- <img id="profile-img"/> -->
+          <img class="dropdown-menu dropdown-menu-right" aria-labelledby="dd3">                
+            <div class="avatar-upload dropdown-item dp2 cursor-default">
+              <div class="avatar-edit">
+                <input type='file' id="imageupload" accept="file_extension|audio/*|video/*|image/*|media_type"/>
+                  <label for="imageupload"></label>
+              </div>
+            <div class="avatar-preview">
+              <div id="profile-img" class="imagePreview" style="background-image: url(
+                  {% if author.profile_photo %}
+                    {{ author.profile_photo.url }}
+                  {% else %}
+                    {% static 'profile-icon.png' %}
+                  {% endif %}
+                  );">
+              <!-- </div> -->
+              <!-- <div class="imagePreview" style="background-image: url('static/profile-icon.png');"></div> -->
+            </div>
+            <!-- <div class="text-center mt-2">{{ advisor.advisor_user.first_name }} {{ advisor.advisor_user.last_name }}</div> -->
+            </div>
+          </div>
           <p>Mike Ross</p>
           <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
           <div id="status-options">
@@ -48,6 +70,7 @@
       <div id="contacts">
         <ul>
           {% for chat in filtered_chats %}
+            <a href="{% url 'room' chat.id %}">Chat {{chat.id}}</a>
             <li class="contact">
               <div class="wrap">
                 <span class="contact-status online"></span>
@@ -93,7 +116,7 @@
     </div>
     <div class="content">
       <div class="contact-profile">
-        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+        <!-- <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" /> -->
         <p>{{ username }}</p>
         <div class="social-media">
           <i class="fa fa-facebook" aria-hidden="true"></i>
@@ -116,10 +139,20 @@
       <div class="message-input">
         <div class="wrap">
         <input id="chat-message-input" type="text" placeholder="Write your message..." />
-        <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
-        <button id="chat-message-submit" class="submit">
+        <form method = "post" enctype="multipart/form-data"> 
+          {% csrf_token %} 
+          {{ form.as_p }} 
+          <input type="file" name="myfile" value="browse"/>
+          <button id="chat-message-submit" class="submit">
+            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+          </button>
+        </form> 
+        <!-- <button id="file-upload" class="submit">
+          <i class="fa fa-paperclip attachment" aria-hidden="true"></i> -->
+        <!-- </button> -->
+        <!-- <button id="chat-message-submit" class="submit">
           <i class="fa fa-paper-plane" aria-hidden="true"></i>
-        </button>
+        </button> -->
         </div>
       </div>
     </div>
@@ -135,6 +168,7 @@
         'ws://' + window.location.host +
         '/ws/chat/' + roomName + '/');
 
+    chatSocket.binaryType = 'arraybuffer';
     chatSocket.onopen = function(e) {
       fetchMessages(username, roomName);
     }
@@ -173,6 +207,7 @@
         messageInputDom.value = '';
     };
 
+
     document.getElementById('contacts').onclick = function(e) {
       
       // var roomName = document.querySelector('#room-name-input').value;
@@ -187,12 +222,14 @@
       var author = data['author'];
       var msgListTag = document.createElement('li');
       var imgTag = document.createElement('img');
-      var pTag =  document.createElement('p');
-      // var msg_timestamp = "<html><body><small>" + data.timestamp + "</small></body></html>";
-      pTag.innerText = data.content + "\r\n" + data.timestamp;
-      // $('p').append(msg_timestamp);
-      // $('p').append(JSON.stringify(msg_timestamp));
+      var pTag = document.createElement('p');
+      var dateTag = document.createElement('SUB');
+      pTag.textContent = data.content + "\r\n";
+      dateTag.textContent = renderTimestamp(data.timestamp);
+      dateTag.style.fontSize = "8px"
+      pTag.appendChild(dateTag);
       imgTag.src = 'http://emilcarlsson.se/assets/mikeross.png';
+
       if (author === username) {
         msgListTag.className = 'sent';
       } else {
@@ -204,6 +241,63 @@
       document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
 
+    function renderTimestamp(timestamp) {
+      let prefix = "";
+      var timeDiff = Math.round(
+        (new Date().getTime() - new Date(timestamp).getTime()) / 60000
+      );
+      if (timeDiff < 1) {
+        // less than one minute ago
+        prefix = "just now";
+      } else if (timeDiff < 60 && timeDiff >= 1) {
+        // less than sixty minutes ago
+        prefix = `${timeDiff} minutes ago`;
+      } else if (timeDiff < 120 && timeDiff >= 60) {
+        // less than 2 hours ago
+        prefix = `${Math.round(timeDiff / 60)} hour ago`;
+      } else if (timeDiff < 24 * 60 && timeDiff >= 120) {
+        // less than 24 hours ago, more than 2h ago
+        prefix = `${Math.round(timeDiff / 60)} hours ago`;
+      } else if (timeDiff < 31 * 24 * 60 && timeDiff >= 24 * 60) {
+        // less than 1 month
+        prefix = `${Math.round(timeDiff / (60 * 24))} days ago`;
+      } else {
+        prefix = `${new Date(timestamp)}`;
+      }
+      return prefix;
+    }
+
+    function readURL(input) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var result = e.target.result;
+        var url = "{% url 'profile_photo' %}"
+        var fileName = '{{ user.id }}' + '_apfp.' + input.files[0].name.split('.').pop(); // unique filename
+        var fd = new FormData();
+        fd.append("file", input.files[0], fileName);
+        fd.append("csrfmiddlewaretoken", '{{ csrf_token }}');
+        $.ajax({   
+          type: "POST",                    
+          url: url,                    
+          data: fd,
+          cache: false,
+          contentType: false, // Must put to parse csrf_token via ajax
+          processData: false, // Must put to parse csrf_token via ajax
+          success: function (data) {
+          }
+        });
+        $('.imagePreview').css('background-image', 'url('+e.target.result +')');
+        $('.imagePreview').hide();
+        $('.imagePreview').fadeIn(650);
+      }
+      reader.readAsDataURL(input.files[0]);
+      }
+    }
+    $("#imageupload").change(function() {
+        readURL(this);
+    });
+    
 </script>
 </body>
 

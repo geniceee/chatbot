@@ -31,6 +31,10 @@ ALLOWED_HOSTS = []
 # LOGIN_URL = "/"
 LOGIN_REDIRECT_URL = "/chat/"
 
+# Specify where Django stores uploaded files and from what URL Django serves them
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
 # Application definition
 
 INSTALLED_APPS = [
