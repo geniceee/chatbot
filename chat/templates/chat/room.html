@@ -15,15 +15,23 @@
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
     <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <style> 
+      a {
+        color: #FFFFFF;
+      }
+
+      a:hover {
+        color: #FFFFFF;
+        text-decoration: none;
+      }
+  </style> 
   </head>
   <div id="frame">
     <div id="sidepanel">
       <div id="profile">
         <div class="wrap">
           <!-- <img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" /> -->
-          <!-- <img id="profile-img" class="online" alt="" /> -->
-          <!-- <img id="profile-img"/> -->
-          <img class="dropdown-menu dropdown-menu-right" aria-labelledby="dd3">                
+          <!-- <img class="dropdown-menu dropdown-menu-right" aria-labelledby="dd3">                 -->
             <div class="avatar-upload dropdown-item dp2 cursor-default">
               <div class="avatar-edit">
                 <input type='file' id="imageupload" accept="file_extension|audio/*|video/*|image/*|media_type"/>
@@ -31,19 +39,16 @@
               </div>
             <div class="avatar-preview">
               <div id="profile-img" class="imagePreview" style="background-image: url(
-                  {% if author.profile_photo %}
-                    {{ author.profile_photo.url }}
+                  {% if contact.msg_file %}
+                    {{ contact.msg_file.url }}
                   {% else %}
                     {% static 'profile-icon.png' %}
                   {% endif %}
                   );">
-              <!-- </div> -->
-              <!-- <div class="imagePreview" style="background-image: url('static/profile-icon.png');"></div> -->
-            </div>
-            <!-- <div class="text-center mt-2">{{ advisor.advisor_user.first_name }} {{ advisor.advisor_user.last_name }}</div> -->
             </div>
           </div>
-          <p>Mike Ross</p>
+        </div>
+          <!-- <p>Mike Ross</p>
           <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
           <div id="status-options">
             <ul>
@@ -60,21 +65,30 @@
             <input name="twitter" type="text" value="ross81" />
             <label for="twitter"><i class="fa fa-instagram fa-fw" aria-hidden="true"></i></label>
             <input name="twitter" type="text" value="mike.ross" />
-          </div>
+          </div> -->
         </div>
       </div>
       <div id="search">
         <label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
-        <input type="text" placeholder="Search contacts..." />
+        <input type="text" id="myInput" onkeyup="filterSearch()" placeholder="Search contacts..." />
       </div>
       <div id="contacts">
-        <ul>
+        <ul id="myUL">
           {% for chat in filtered_chats %}
-            <a href="{% url 'room' chat.id %}">Chat {{chat.id}}</a>
+          <a href="{% url 'room' chat.id %}" id="link">
             <li class="contact">
               <div class="wrap">
-                <span class="contact-status online"></span>
-                <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" />
+                <!-- <span class="contact-status online"></span> -->
+                {% for person in chat.other_contacts %}
+                {% if person == contact %}
+                {% else %}
+                {% if person.msg_file %}
+                <img src= "{{ person.msg_file.url }}" alt="" />
+                {% else %}
+                <img src= "{% static 'profile-icon.png' %}" alt="" />
+                {% endif %}
+                {% endif %}
+                {% endfor %}
                 <div class="meta">
                   {% for p in chat.other_participants %}
                   {% if p == author %}
@@ -85,7 +99,7 @@
                   <p class="preview">{{ chat.most_recent_message }}</p>
                 </div>
               </div>
-            </li>
+            </li></a>
           {% endfor %}
           <!-- <li class="contact">
             <div class="wrap">
@@ -109,50 +123,55 @@
           </li> -->
         </ul>
       </div>
-      <div id="bottom-bar">
+      <!-- <div id="bottom-bar">
         <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span></button>
         <button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Settings</span></button>
-      </div>
+      </div> -->
     </div>
     <div class="content">
       <div class="contact-profile">
-        <!-- <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" /> -->
-        <p>{{ username }}</p>
-        <div class="social-media">
+        {% for person in participants %}
+        {% if person == contact %}
+        {% else %}
+        {% if person.msg_file %}
+        <img src= "{{ person.msg_file.url }}" alt="" />
+        <p>{{ person }}</p>
+        {% else %}
+        <img src= "{% static 'profile-icon.png' %}" alt="" />
+        <p>{{ person }}</p>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        <!-- <div class="social-media">
           <i class="fa fa-facebook" aria-hidden="true"></i>
           <i class="fa fa-twitter" aria-hidden="true"></i>
-          <i class="fa fa-instagram" aria-hidden="true"></i>
-        </div>
+          <i class="fa fa-instagram" aria-hidden="true"></i> -->
+        <!-- </div> -->
       </div>
       <div class="messages">
         <ul id="chat-log">
-          {% comment %} <li class="sent">
+          <!-- {% comment %} <li class="sent">
             <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
             <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
           </li>
           <li class="replies">
             <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
             <p>When you're backed against the wall, break the god damn thing down.</p>
-          </li> {% endcomment %}
+          </li> {% endcomment %} -->
         </ul>
       </div>
       <div class="message-input">
         <div class="wrap">
         <input id="chat-message-input" type="text" placeholder="Write your message..." />
-        <form method = "post" enctype="multipart/form-data"> 
-          {% csrf_token %} 
-          {{ form.as_p }} 
-          <input type="file" name="myfile" value="browse"/>
+        <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
+          <!-- <form method = "post" enctype="multipart/form-data"> 
+            {% csrf_token %} 
+            {{ form.as_p }} 
+            <input type="file" name="myfile" value="browse"/> -->
           <button id="chat-message-submit" class="submit">
             <i class="fa fa-paper-plane" aria-hidden="true"></i>
           </button>
-        </form> 
-        <!-- <button id="file-upload" class="submit">
-          <i class="fa fa-paperclip attachment" aria-hidden="true"></i> -->
-        <!-- </button> -->
-        <!-- <button id="chat-message-submit" class="submit">
-          <i class="fa fa-paper-plane" aria-hidden="true"></i>
-        </button> -->
+        </form>
         </div>
       </div>
     </div>
@@ -167,8 +186,9 @@
     var chatSocket = new ReconnectingWebSocket(
         'ws://' + window.location.host +
         '/ws/chat/' + roomName + '/');
+        
+    // chatSocket.binaryType = 'arraybuffer';
 
-    chatSocket.binaryType = 'arraybuffer';
     chatSocket.onopen = function(e) {
       fetchMessages(username, roomName);
     }
@@ -207,15 +227,27 @@
         messageInputDom.value = '';
     };
 
-
-    document.getElementById('contacts').onclick = function(e) {
-      
-      // var roomName = document.querySelector('#room-name-input').value;
-      window.location.pathname = "/chat/" + roomName + "/";
-  };
+    function filterSearch() {
+      var input, filter, ul, li, a, i, txtValue;
+      input = document.getElementById('myInput');
+      filter = input.value.toUpperCase();
+      ul = document.getElementById("myUL");
+      li = ul.getElementsByTagName('li');
+  
+      for (i = 0; i < li.length; i++) {
+        a = li[i].getElementsByTagName("p")[0];
+        txtValue = a.textContent || a.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          li[i].style.display = "";
+        } else {
+          li[i].style.display = "none";
+        }
+      }
+    }
 
     function fetchMessages(username, roomName) {
-      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName }));
+      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName}));
+      // document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
 
     function createMessage(data) {
@@ -228,19 +260,33 @@
       dateTag.textContent = renderTimestamp(data.timestamp);
       dateTag.style.fontSize = "8px"
       pTag.appendChild(dateTag);
-      imgTag.src = 'http://emilcarlsson.se/assets/mikeross.png';
 
       if (author === username) {
         msgListTag.className = 'sent';
+        {% if contact.msg_file %}
+        imgTag.src= "{{ contact.msg_file.url }}";
+        {% else %}
+        imgTag.src= "{% static 'profile-icon.png' %}";
+        {% endif %}
       } else {
         msgListTag.className = 'replies';
+        {% for person in participants %}
+        {% if person == contact %}
+        {% else %}
+        {% if person.msg_file %}
+        imgTag.src= "{{ person.msg_file.url }}";
+        {% else %}
+        imgTag.src= "{% static 'profile-icon.png' %}";
+        {% endif %}
+        {% endif %}
+        {% endfor %}
       }
       msgListTag.appendChild(imgTag);
       msgListTag.appendChild(pTag);
       document.querySelector('#chat-log').appendChild(msgListTag);
       document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
-
+    
     function renderTimestamp(timestamp) {
       let prefix = "";
       var timeDiff = Math.round(
@@ -297,7 +343,7 @@
     $("#imageupload").change(function() {
         readURL(this);
     });
-    
+
 </script>
 </body>
 
