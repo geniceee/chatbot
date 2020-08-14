@@ -48,7 +48,10 @@ class Chat(models.Model):
         return "{}".format(self.pk) 
     
     def most_recent_message(self):
-        return self.messages.order_by('-timestamp').all()[0].content
+        if self.messages.count() == 0:
+            return None
+        else:
+            return self.messages.order_by('-timestamp').all()[0].content
 
     def most_recent_contact(self):
         return self.messages.order_by('-timestamp').all()[0].contact
@@ -61,3 +64,11 @@ class Chat(models.Model):
 
     def get_absolute_url(self):
         return reverse('room', args=[str(self.pk)])
+
+
+class File(models.Model):
+    attachment = models.FileField(blank=True,null=True,
+        upload_to='attachment',storage=FileSystemStorage())
+
+    def __str__(self):
+        return self.attachment.url

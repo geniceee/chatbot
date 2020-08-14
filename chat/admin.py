@@ -4,8 +4,9 @@ from django.contrib import admin
 # from .models import Message
 
 # admin.site.register(Message) 
-from .models import Chat, Contact, Message
+from .models import Chat, Contact, Message, File
 
 admin.site.register(Chat)
 admin.site.register(Contact)
 admin.site.register(Message) 
+admin.site.register(File) 

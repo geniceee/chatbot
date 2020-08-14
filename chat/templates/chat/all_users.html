@@ -1,4 +1,3 @@
-<!-- chat/templates/chat/index.html -->
 {% load static %}
 <!DOCTYPE html>
 <html>
@@ -74,34 +73,26 @@
       </div>
       <div id="contacts">
         <ul id="myUL">
-          {% for chat in filtered_chats %}
-          <a href="{% url 'room' chat.id %}">
+        {% for person in contacts %}
+        {% if person == contact %}
+        {% else %}
+            <a href= "{% url 'create_chat' person.id %}">
             <li class="contact">
               <div class="wrap">
                 <!-- <span class="contact-status online"></span> -->
                 <!-- <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" /> -->
-                {% for person in chat.other_contacts %}
-                {% if person == contact %}
-                {% else %}
                 {% if person.msg_file %}
                 <img src= "{{ person.msg_file.url }}" alt="" />
                 {% else %}
                 <img src= "{% static 'profile-icon.png' %}" alt="" />
                 {% endif %}
-                {% endif %}
-                {% endfor %}
                 <div class="meta">
-                  {% for p in chat.other_participants %}
-                  {% if p == author %}
-                  {% else %}
-                  <p class="name">{{p}}</p>
-                  {% endif %}
-                  {% endfor %}
-                  <p class="preview">{{ chat.most_recent_message }}</p>
+                  <p class="name">{{person}}</p>
                 </div>
               </div>
             </li></a>
-          {% endfor %}
+        {% endif %}
+        {% endfor %}
           <!-- <li class="contact">
             <div class="wrap">
               <span class="contact-status online"></span>
