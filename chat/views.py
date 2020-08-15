@@ -40,16 +40,16 @@ def index(request):
 
     return render(request, 'chat/index.html', context=context)
 
-def sign_up(request):
-    context = {}
-    form = UserCreationForm(request.POST or None)
-    if request.method == "POST":
-        if form.is_valid():
-            user = form.save()
-            login(request,user)
-            return render(request,'chat/index.html')
-    context['form']=form
-    return render(request,'chat/sign_up.html', context)    
+# def sign_up(request):
+#     context = {}
+#     form = UserCreationForm(request.POST or None)
+#     if request.method == "POST":
+#         if form.is_valid():
+#             user = form.save()
+#             login(request,user)
+#             return render(request,'chat/index.html')
+#     context['form']=form
+#     return render(request,'chat/sign_up.html', context)    
 
 def get_user_contact(username):
     user = get_object_or_404(User, username=username)
