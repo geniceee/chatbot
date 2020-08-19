@@ -9,4 +9,5 @@ urlpatterns = [
     path('all_users/', views.all_users, name='all_users'),
     path('create/<str:second_user_id>/', views.create_chat, name='create_chat'),
     path('<str:room_name>/', views.room, name='room'),
+    path('upload_file', views.upload_file, name='upload_file'),
 ]

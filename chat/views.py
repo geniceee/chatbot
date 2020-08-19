@@ -121,26 +121,6 @@ def get_last_10_messages(room_name):
 def get_current_chat(room_name):
     return get_object_or_404(Chat, id=room_name)
 
-def profile_photo(request):
-    data=request.FILES.get('file')
-
-    user = request.user
-    author = Contact.objects.get(user=user)
-
-    if author.msg_file:
-        advpath = author.msg_file.url.split(settings.MEDIA_URL)
-        os.remove(os.path.join(settings.MEDIA_ROOT,advpath[1]))
-    
-    # data.name = str(request.user.id) + "_apfp"
-    author.msg_file=data
-    author.save()
-
-    data = {
-        'ok' : 'ok',
-    }
-    return JsonResponse(data)
-
-
 def create_chat(request, second_user_id):
 
     first_contact = Contact.objects.get(user=request.user)
@@ -158,6 +138,51 @@ def create_chat(request, second_user_id):
         return redirect(reverse('room', kwargs={'room_name': existing[0].id}))
 
 
+def profile_photo(request):
+    data=request.FILES.get('file') 
 
+    user_id = request.user.id
+
+    author = Contact.objects.get(id=user_id)
+
+    # removes the image
+    if author.profile_photo:
+        advpath = author.profile_photo.url.split(settings.MEDIA_URL)
+        print(advpath)
+        os.remove(os.path.join(settings.MEDIA_ROOT,advpath[1]))
+    author.profile_photo=data
+    author.save()
+    print(author.profile_photo)
+
+    data = {
+        'ok' : 'ok',
+    }
+    return JsonResponse(data)
+
+def upload_file(request):
+    data=request.FILES.get('file')
+    existing_ids = list(File.objects.values_list('id', flat=True).order_by('id'))
+
+    for file_id in range(1, 100):
+        if file_id not in existing_ids:
+            existing_ids.append(file_id)
+            file_obj = File.objects.create(id=file_id)
+            break
+        else:
+            file_id += 1
+
+    # removes the image
+    if file_obj.attachment:
+        advpath = file_obj.attachment.url.split(settings.MEDIA_URL)
+        os.remove(os.path.join(settings.MEDIA_ROOT,advpath[1]))
+    file_obj.attachment=data
+    file_obj.save()
+
+    data = {
+        'filepath' : file_obj.attachment.url,
+    }
+
+    # print(data['filepath'])
+    return JsonResponse(data)
 
 

@@ -10,7 +10,7 @@ User = get_user_model()
 class Contact(models.Model):
     user = models.ForeignKey(User, related_name='friends', on_delete=models.CASCADE)
     friends = models.ManyToManyField('self', blank=True)
-    msg_file = models.FileField(blank=True, null=True, upload_to='profilepic', storage=FileSystemStorage())
+    profile_photo = models.FileField(blank=True, null=True, upload_to='profilepic', storage=FileSystemStorage())
 
     def __str__(self):
         return self.user.username
@@ -19,6 +19,7 @@ class Message(models.Model):
     contact = models.ForeignKey(Contact, related_name='messages', on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    attachment = models.FileField(blank=True,null=True,storage=FileSystemStorage())
 
     def __str__(self):
         return self.contact.user.username
@@ -72,3 +73,10 @@ class File(models.Model):
 
     def __str__(self):
         return self.attachment.url
+
+class File(models.Model):
+    attachment = models.FileField(blank=True,null=True,
+        upload_to='attachment',storage=FileSystemStorage())
+
+    def __str__(self):
+        return self.attachment.name

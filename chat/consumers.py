@@ -23,7 +23,8 @@ class ChatConsumer(WebsocketConsumer):
         # author_user = User.objects.filter(username=author)[0]
         message = Message.objects.create(
             contact=author, 
-            content=data['message'])
+            content=data['message'],
+            attachment=data['filepath'])
 
         current_chat = get_current_chat(data['room_name'])
         current_chat.messages.add(message)
@@ -42,12 +43,20 @@ class ChatConsumer(WebsocketConsumer):
         return result
 
     def message_to_json(self, message):
-        return {
-            'id': message.id,
-            'author': message.contact.user.username,
-            'content': message.content,
-            'timestamp': str(message.timestamp)
-        }
+        if (message.attachment == ''):
+            return {
+                'id': message.id,
+                'author': message.contact.user.username,
+                'content': message.content,
+                'timestamp': str(message.timestamp),
+            }
+        else:
+            return {
+                'id': message.id,
+                'author': message.contact.user.username,
+                'content': json.dumps(str(message.attachment)),
+                'timestamp': str(message.timestamp),
+            }
 
     commands = {
         'fetch_messages': fetch_messages,

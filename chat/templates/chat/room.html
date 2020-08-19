@@ -165,16 +165,15 @@
       </div>
       <div class="message-input">
         <div class="wrap">
-        <input id="chat-message-input" type="text" placeholder="Write your message..." />
-        <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
-          <!-- <form method = "post" enctype="multipart/form-data"> 
-            {% csrf_token %} 
-            {{ form.as_p }} 
-            <input type="file" name="myfile" value="browse"/> -->
-          <button id="chat-message-submit" class="submit">
+          <input id="chat-message-input" type="text" placeholder="Write your message..." />
+          <input type='file' id="fileUpload" accept="file_extension|audio/*|video/*|image/*|media_type" name='file_input'/>
+          <div id="fileUpload" class="imagePreview" style="background-image: url(
+              {{ file.attachment.url }}
+              );">
+          </div>
+          <button id="chat-message-submit" class="submit" name="submit">
             <i class="fa fa-paper-plane" aria-hidden="true"></i>
           </button>
-        </form>
         </div>
       </div>
     </div>
@@ -217,17 +216,21 @@
         }
     };
 
-    document.querySelector('#chat-message-submit').onclick = function(e) {
-        var messageInputDom = document.getElementById('chat-message-input');
-        var message = messageInputDom.value;
-        chatSocket.send(JSON.stringify({
-            'command': 'new_message',
-            'message': message,
-            'from': username,
-            'room_name': roomName,
+    document.querySelector('#chat-message-submit').onclick = function(e) {      // save File object, append filepath (eg. message.msg_file.url)  
+      uploadFile($("#fileUpload")[0]);
+      var messageInputDom = document.getElementById('chat-message-input');
+      var message = messageInputDom.value;
+      if (message == '') {
+        return
+      } else {
+          chatSocket.send(JSON.stringify({ 
+          'command': 'new_message',
+          'message': message,
+          'from': username,
+          'room_name': roomName,
+          'filepath': ''
         }));
-
-        messageInputDom.value = '';
+      }
     };
 
     function filterSearch() {
@@ -259,7 +262,32 @@
       var imgTag = document.createElement('img');
       var pTag = document.createElement('p');
       var dateTag = document.createElement('SUB');
-      pTag.textContent = data.content + "\r\n";
+      supported_img_files = ['jpg', 'jpeg', 'png', 'webp'];
+      supported_txt_files = ['doc', 'pdf', 'txt', 'docx'];
+      remove_quotes = data.content.replace(/\"/g, "")
+      if (supported_img_files.includes(remove_quotes.split(".")[1])) { // if data.content is an img url
+        var imgfileTag = document.createElement('img')
+        imgfileTag.src = remove_quotes
+        pTag.appendChild(imgfileTag)
+      } else if (supported_txt_files.includes(remove_quotes.split(".")[1])) { // if data.content is a file url
+          var fileTag = document.createElement('a')
+          fileTag.href = data.content.replace(/\"/g, "");
+          part_one = remove_quotes.split('/')[3].split('_').slice(0, -1).join(' ')
+          file_name = part_one.concat('.' + remove_quotes.split(".")[1])
+          fileTag.download = file_name
+          var name_tag = document.createElement('p')
+          var small = document.createElement('small')
+          small.textContent = file_name
+          name_tag.appendChild(small)
+          var img_logo = document.createElement('img')
+          img_logo.src = "/static/download.png"
+          fileTag.appendChild(name_tag)
+          fileTag.appendChild(img_logo)
+          pTag.appendChild(fileTag)
+      } else {
+          pTag.textContent = data.content + "\r\n";
+      };
+      
       dateTag.textContent = renderTimestamp(data.timestamp);
       dateTag.style.fontSize = "8px"
       pTag.appendChild(dateTag);
@@ -346,6 +374,44 @@
     $("#imageupload").change(function() {
         readURL(this);
     });
+
+    function uploadFile(input) { 
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var result = e.target.result;
+          var url = "{% url 'upload_file' %}"
+          var fileName = input.files[0].name
+          console.log(fileName)
+          var fd = new FormData();
+          fd.append("file", input.files[0], fileName);
+          fd.append("csrfmiddlewaretoken", '{{ csrf_token }}');
+          $.ajax({   
+            type: "POST",                    
+            url: url,                    
+            data: fd,
+            cache: false,
+            contentType: false, // Must put to parse csrf_token via ajax
+            processData: false, // Must put to parse csrf_token via ajax
+            success: function (data) {
+              var filepath = data['filepath']
+              var messageInputDom = document.getElementById('chat-message-input');
+              var message = messageInputDom.value;
+              chatSocket.send(JSON.stringify({ 
+                'command': 'new_message',
+                'message': message,
+                'from': username,
+                'room_name': roomName,
+                'filepath': filepath,
+              }));
+
+              messageInputDom.value = '';
+            },
+          });
+        }
+        reader.readAsDataURL(input.files[0]);
+        }
+    }
 
 </script>
 </body>
