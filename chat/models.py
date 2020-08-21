@@ -73,10 +73,3 @@ class File(models.Model):
 
     def __str__(self):
         return self.attachment.url
-
-class File(models.Model):
-    attachment = models.FileField(blank=True,null=True,
-        upload_to='attachment',storage=FileSystemStorage())
-
-    def __str__(self):
-        return self.attachment.name
