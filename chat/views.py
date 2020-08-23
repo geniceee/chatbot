@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
 import json
-from .models import Chat, Contact, Message
+from .models import Chat, Contact, Message, File
 from django.contrib.auth import get_user_model, authenticate, login
 from django.http import HttpResponseRedirect
 from chatbot import settings
@@ -69,7 +69,6 @@ def check_profile(func):
             if user == participant_name:
                 count += 1
         if count==0:
-            # logout(request)
             return HttpResponseRedirect('/accounts/logout/')
         
         return func(request, room_name)
