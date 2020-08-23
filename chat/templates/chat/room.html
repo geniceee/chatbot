@@ -11,6 +11,7 @@
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
@@ -31,24 +32,25 @@
       <div id="profile">
         <div class="wrap">
           <!-- <img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" /> -->
-          <!-- <img class="dropdown-menu dropdown-menu-right" aria-labelledby="dd3">                 -->
-            <div class="avatar-upload cursor-default">
-              <div class="avatar-edit">
-                <input type='file' id="imageupload" accept="file_extension|audio/*|video/*|image/*|media_type"/>
-                  <label for="imageupload"></label>
-              </div>
+          <!-- <img id="profile-img" class="online" alt="" /> -->
+          <!-- <img id="profile-img"/> -->
+          <div class="avatar-upload cursor-default">
+            <div class="avatar-edit">
+              <input type='file' id="imageupload" accept="file_extension|audio/*|video/*|image/*|media_type"/>
+                <label for="imageupload"></label>
+            </div>
             <div class="avatar-preview">
               <div id="profile-img" class="imagePreview" style="background-image: url(
-                  {% if contact.msg_file %}
-                    {{ contact.msg_file.url }}
+                  {% if contact.profile_photo %}
+                    {{ contact.profile_photo.url }}
                   {% else %}
                     {% static 'profile-icon.png' %}
                   {% endif %}
                   );">
+              </div>
             </div>
+            <p>{{author}}</p>
           </div>
-          <p>{{author}}</p>
-        </div>
           <!-- <p>Mike Ross</p>
           <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
           <div id="status-options">
@@ -83,8 +85,8 @@
                 {% for person in chat.other_contacts %}
                 {% if person == contact %}
                 {% else %}
-                {% if person.msg_file %}
-                <img src= "{{ person.msg_file.url }}" alt="" />
+                {% if person.profile_photo %}
+                <img src= "{{ person.profile_photo.url }}" alt="" />
                 {% else %}
                 <img src= "{% static 'profile-icon.png' %}" alt="" />
                 {% endif %}
@@ -125,10 +127,8 @@
         </ul>
       </div>
       <div id="bottom-bar">
-        <a href= "{% url 'all_users' %}">
-        <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span></button></a>
-        <a href= "{% url 'logout' %}">
-        <button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Logout</span></button></a>
+        <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span></button>
+        <button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Settings</span></button>
       </div>
     </div>
     <div class="content">
@@ -136,8 +136,8 @@
         {% for person in participants %}
         {% if person == contact %}
         {% else %}
-        {% if person.msg_file %}
-        <img src= "{{ person.msg_file.url }}" alt="" />
+        {% if person.profile_photo %}
+        <img src= "{{ person.profile_photo.url }}" alt="" />
         <p>{{ person }}</p>
         {% else %}
         <img src= "{% static 'profile-icon.png' %}" alt="" />
@@ -145,11 +145,6 @@
         {% endif %}
         {% endif %}
         {% endfor %}
-        <!-- <div class="social-media">
-          <i class="fa fa-facebook" aria-hidden="true"></i>
-          <i class="fa fa-twitter" aria-hidden="true"></i>
-          <i class="fa fa-instagram" aria-hidden="true"></i> -->
-        <!-- </div> -->
       </div>
       <div class="messages">
         <ul id="chat-log">
@@ -165,19 +160,26 @@
       </div>
       <div class="message-input">
         <div class="wrap">
-          <input id="chat-message-input" type="text" placeholder="Write your message..." />
-          <input type='file' id="fileUpload" accept="file_extension|audio/*|video/*|image/*|media_type" name='file_input'/>
-          <div id="fileUpload" class="imagePreview" style="background-image: url(
-              {{ file.attachment.url }}
-              );">
-          </div>
-          <button id="chat-message-submit" class="submit" name="submit">
-            <i class="fa fa-paper-plane" aria-hidden="true"></i>
-          </button>
+        <input id="chat-message-input" type="text" placeholder="Write your message..." />
+        <input type='file' id="fileUpload" accept="file_extension|audio/*|video/*|image/*|media_type" name='file_input'/>
+        <div id="fileUpload" class="imagePreview" style="background-image: url(
+            {{ file.attachment.url }}
+            );">
+        </div>
+        <button id="chat-message-submit" class="submit" name="submit">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button>
+        <!-- <button id="file-upload" class="submit">
+          <i class="fa fa-paperclip attachment" aria-hidden="true"></i> -->
+        <!-- </button> -->
+        <!-- <button id="chat-message-submit" class="submit">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button> -->
         </div>
       </div>
     </div>
   </div>
+  
 
 <script src="{% static 'main.js' %}"></script>
 <script src="{% static 'reconnecting-websocket.js' %}"></script>
@@ -188,7 +190,7 @@
     var chatSocket = new ReconnectingWebSocket(
         'ws://' + window.location.host +
         '/ws/chat/' + roomName + '/');
-        
+
     // chatSocket.binaryType = 'arraybuffer';
 
     chatSocket.onopen = function(e) {
@@ -252,16 +254,17 @@
     }
 
     function fetchMessages(username, roomName) {
-      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName}));
-      // document.querySelector('#chat-log').lastChild.scrollIntoView(false);
+      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName }));
     }
 
     function createMessage(data) {
+      console.log(data)
       var author = data['author'];
       var msgListTag = document.createElement('li');
       var imgTag = document.createElement('img');
       var pTag = document.createElement('p');
       var dateTag = document.createElement('SUB');
+      dateTag.textContent = renderTimestamp(data.timestamp);
       supported_img_files = ['jpg', 'jpeg', 'png', 'webp'];
       supported_txt_files = ['doc', 'pdf', 'txt', 'docx'];
       remove_quotes = data.content.replace(/\"/g, "")
@@ -269,6 +272,7 @@
         var imgfileTag = document.createElement('img')
         imgfileTag.src = remove_quotes
         pTag.appendChild(imgfileTag)
+        dateTag.id = "dateTag"
       } else if (supported_txt_files.includes(remove_quotes.split(".")[1])) { // if data.content is a file url
           var fileTag = document.createElement('a')
           fileTag.href = data.content.replace(/\"/g, "");
@@ -276,26 +280,28 @@
           file_name = part_one.concat('.' + remove_quotes.split(".")[1])
           fileTag.download = file_name
           var name_tag = document.createElement('p')
-          var small = document.createElement('small')
-          small.textContent = file_name
-          name_tag.appendChild(small)
           var img_logo = document.createElement('img')
           img_logo.src = "/static/download.png"
+          var small = document.createElement('small')
+          small.textContent = file_name
+          name_tag.appendChild(img_logo)
+          name_tag.appendChild(small)
           fileTag.appendChild(name_tag)
-          fileTag.appendChild(img_logo)
           pTag.appendChild(fileTag)
+          dateTag.id = "dateTag"
       } else {
           pTag.textContent = data.content + "\r\n";
+          dateTag.style.fontSize = "8px"
       };
-      
-      dateTag.textContent = renderTimestamp(data.timestamp);
-      dateTag.style.fontSize = "8px"
+      // dateTag.textContent = renderTimestamp(data.timestamp);
+
+      // dateTag.style.fontSize = "8px"
       pTag.appendChild(dateTag);
 
       if (author === username) {
         msgListTag.className = 'sent';
-        {% if contact.msg_file %}
-        imgTag.src= "{{ contact.msg_file.url }}";
+        {% if contact.profile_photo %}
+        imgTag.src= "{{ contact.profile_photo.url }}";
         {% else %}
         imgTag.src= "{% static 'profile-icon.png' %}";
         {% endif %}
@@ -304,8 +310,8 @@
         {% for person in participants %}
         {% if person == contact %}
         {% else %}
-        {% if person.msg_file %}
-        imgTag.src= "{{ person.msg_file.url }}";
+        {% if person.profile_photo %}
+        imgTag.src= "{{ person.profile_photo.url }}";
         {% else %}
         imgTag.src= "{% static 'profile-icon.png' %}";
         {% endif %}
@@ -317,7 +323,7 @@
       document.querySelector('#chat-log').appendChild(msgListTag);
       document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
-    
+
     function renderTimestamp(timestamp) {
       let prefix = "";
       var timeDiff = Math.round(
@@ -412,7 +418,6 @@
         reader.readAsDataURL(input.files[0]);
         }
     }
-
 </script>
 </body>
 

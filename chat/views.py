@@ -140,9 +140,9 @@ def create_chat(request, second_user_id):
 def profile_photo(request):
     data=request.FILES.get('file') 
 
-    user_id = request.user.id
+    user = request.user
 
-    author = Contact.objects.get(id=user_id)
+    author = Contact.objects.get(user=user)
 
     # removes the image
     if author.profile_photo:
