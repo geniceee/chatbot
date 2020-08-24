@@ -41,9 +41,25 @@ class Message(models.Model):
 
         return prefix
 
+class File(models.Model):
+    attachment = models.FileField(blank=True,null=True,
+        upload_to='attachment',storage=FileSystemStorage())
+
+    def __str__(self):
+        return self.attachment.url
+
+class Notification(models.Model):
+    contact = models.ForeignKey(Contact, related_name='contacts', on_delete=models.CASCADE)
+    message= models.ForeignKey(Message, related_name='msg_notifications', on_delete=models.CASCADE)
+    is_read = models.BooleanField(default= False)
+
+    def __str__(self):
+        return "{}".format(self.pk) 
+
 class Chat(models.Model):
     participants = models.ManyToManyField(Contact, related_name='chats')
     messages = models.ManyToManyField(Message, blank=True)
+    notifications = models.ManyToManyField(Notification, blank=True)
 
     def __str__(self):
         return "{}".format(self.pk) 
@@ -66,10 +82,6 @@ class Chat(models.Model):
     def get_absolute_url(self):
         return reverse('room', args=[str(self.pk)])
 
+    def num_notifications(self):
+        return self.notifications.filter(is_read=False).count()
 
-class File(models.Model):
-    attachment = models.FileField(blank=True,null=True,
-        upload_to='attachment',storage=FileSystemStorage())
-
-    def __str__(self):
-        return self.attachment.url

@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
-from .models import Message, Chat, Contact
-from .views import get_user_contact, get_current_chat, get_last_10_messages
+from .models import Message, Chat, Contact, Notification
+from .views import get_user_contact, get_current_chat, get_last_10_messages, get_current_notification
 
 User = get_user_model()
 
@@ -30,11 +30,28 @@ class ChatConsumer(WebsocketConsumer):
         current_chat.messages.add(message)
         current_chat.save()
 
+        notification = Notification.objects.last()
+        current_chat.notifications.add(notification)
+        
         content = {
             'command': 'new_message',
             'message': self.message_to_json(message),
+            'notification_id': notification.id,
         }
+
+        print(content)
         return self.send_chat_message(content)
+
+    def notification_read(self, data):
+        try:
+            notifications = get_current_notification(data['room_name'])
+            for notification in notifications:
+                notification.is_read = True
+                notification.save()
+                print('notification_read')
+                
+        except Notification.DoesNotExist:
+            notifications = None
 
     def messages_to_json(self, messages):
         result = []
@@ -60,7 +77,8 @@ class ChatConsumer(WebsocketConsumer):
 
     commands = {
         'fetch_messages': fetch_messages,
-        'new_message': new_message
+        'new_message': new_message,
+        'notification_read': notification_read,
     }
 
     def connect(self):
@@ -68,19 +86,13 @@ class ChatConsumer(WebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
 
-        if self.user.is_authenticated: # also you can add more restrictions here
+        # Join room group
+        if self.user.is_authenticated:
             async_to_sync(self.channel_layer.group_add)(
                 self.room_group_name,
                 self.channel_name
             )
             self.accept()
-
-        # Join room group
-        # async_to_sync(self.channel_layer.group_add)(
-        #     self.room_group_name,
-        #     self.channel_name
-        # )
-        # self.accept()
 
     #Leave room group
     def disconnect(self, close_code):

@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.utils.safestring import mark_safe
 import json
-from .models import Chat, Contact, Message, File
+from .models import Chat, Contact, Message, Notification, File
 from django.contrib.auth import get_user_model, authenticate, login
 from django.http import HttpResponseRedirect
 from chatbot import settings
@@ -13,6 +13,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.contrib import messages
 
 
 User = get_user_model()
@@ -24,6 +25,12 @@ def login_redirect(request):
 def create_user_contact(sender, instance, created, **kwargs):
     if created:
         Contact.objects.create(user=instance)
+
+@receiver(post_save, sender= Message)
+def create_user_notification(sender, instance, created, **kwargs):
+    contact = Contact.objects.filter(id=instance.contact.id)
+    if created:
+        notification = Notification.objects.create(message=instance, contact=contact.first())
 
 def index(request):
 
@@ -85,6 +92,7 @@ def room(request, room_name):
 
     requested_chat = Chat.objects.get(id=room_name)
     query_participants = requested_chat.participants.all()
+    notification = Notification.objects.last()
 
     context = {
         'room_name_json': mark_safe(json.dumps(room_name)),
@@ -92,7 +100,8 @@ def room(request, room_name):
         'filtered_chats': queryset,
         'author': author,
         'contact': contact,
-        'participants': query_participants
+        'participants': query_participants,
+        'notification': notification
     }
 
     return render(request, 'chat/room.html', context=context)
@@ -120,38 +129,23 @@ def get_last_10_messages(room_name):
 def get_current_chat(room_name):
     return get_object_or_404(Chat, id=room_name)
 
-def create_chat(request, second_user_id):
-
-    first_contact = Contact.objects.get(user=request.user)
-    second_contact = Contact.objects.get(id=second_user_id)
-
-    existing = Chat.objects.filter(participants=first_contact.id).filter(participants=second_contact.id)
-
-    if existing.exists():
-        return redirect(reverse('room', kwargs={'room_name': existing[0].id}))
-    else:
-        chat = Chat.objects.create()
-        chat.participants.set([first_contact, second_contact])
-        chat.save()
-
-        return redirect(reverse('room', kwargs={'room_name': existing[0].id}))
-
+def get_current_notification(room_name):
+    chat = get_object_or_404(Chat, id=room_name)
+    return chat.notifications.filter(is_read=False)
 
 def profile_photo(request):
-    data=request.FILES.get('file') 
+    data=request.FILES.get('file')
 
     user = request.user
-
     author = Contact.objects.get(user=user)
 
-    # removes the image
     if author.profile_photo:
         advpath = author.profile_photo.url.split(settings.MEDIA_URL)
-        print(advpath)
         os.remove(os.path.join(settings.MEDIA_ROOT,advpath[1]))
+    
+    # data.name = str(request.user.id) + "_apfp"
     author.profile_photo=data
     author.save()
-    print(author.profile_photo)
 
     data = {
         'ok' : 'ok',
@@ -183,5 +177,27 @@ def upload_file(request):
 
     # print(data['filepath'])
     return JsonResponse(data)
+
+
+def create_chat(request, second_user_id):
+
+    first_contact = Contact.objects.get(user=request.user)
+    second_contact = Contact.objects.get(id=second_user_id)
+
+    existing = Chat.objects.filter(participants=first_contact.id).filter(participants=second_contact.id)
+
+    if existing.exists():
+        return redirect(reverse('room', kwargs={'room_name': existing[0].id}))
+    else:
+        chat = Chat.objects.create()
+        chat.participants.set([first_contact, second_contact])
+        chat.save()
+
+        return redirect(reverse('room', kwargs={'room_name': existing[0].id}))
+
+
+
+
+
 
 

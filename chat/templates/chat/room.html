@@ -11,7 +11,6 @@
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
@@ -32,13 +31,12 @@
       <div id="profile">
         <div class="wrap">
           <!-- <img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" /> -->
-          <!-- <img id="profile-img" class="online" alt="" /> -->
-          <!-- <img id="profile-img"/> -->
-          <div class="avatar-upload cursor-default">
-            <div class="avatar-edit">
-              <input type='file' id="imageupload" accept="file_extension|audio/*|video/*|image/*|media_type"/>
-                <label for="imageupload"></label>
-            </div>
+          <!-- <img class="dropdown-menu dropdown-menu-right" aria-labelledby="dd3">                 -->
+            <div class="avatar-upload cursor-default">
+              <div class="avatar-edit">
+                <input type='file' id="imageupload" accept="file_extension|audio/*|video/*|image/*|media_type"/>
+                  <label for="imageupload"></label>
+              </div>
             <div class="avatar-preview">
               <div id="profile-img" class="imagePreview" style="background-image: url(
                   {% if contact.profile_photo %}
@@ -47,10 +45,10 @@
                     {% static 'profile-icon.png' %}
                   {% endif %}
                   );">
-              </div>
             </div>
-            <p>{{author}}</p>
           </div>
+          <p>{{author}}</p>
+        </div>
           <!-- <p>Mike Ross</p>
           <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
           <div id="status-options">
@@ -78,8 +76,9 @@
       <div id="contacts">
         <ul id="myUL">
           {% for chat in filtered_chats %}
-          <a href="{% url 'room' chat.id %}" id="link">
+          <a href="{% url 'room' chat.id %}">
             <li class="contact">
+              <span class="badge">{{ chat.num_notifications }}</span>
               <div class="wrap">
                 <!-- <span class="contact-status online"></span> -->
                 {% for person in chat.other_contacts %}
@@ -127,8 +126,10 @@
         </ul>
       </div>
       <div id="bottom-bar">
-        <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span></button>
-        <button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Settings</span></button>
+        <a href= "{% url 'all_users' %}">
+        <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span></button></a>
+        <a href= "{% url 'logout' %}">
+        <button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Logout</span></button></a>
       </div>
     </div>
     <div class="content">
@@ -145,6 +146,11 @@
         {% endif %}
         {% endif %}
         {% endfor %}
+        <!-- <div class="social-media">
+          <i class="fa fa-facebook" aria-hidden="true"></i>
+          <i class="fa fa-twitter" aria-hidden="true"></i>
+          <i class="fa fa-instagram" aria-hidden="true"></i> -->
+        <!-- </div> -->
       </div>
       <div class="messages">
         <ul id="chat-log">
@@ -160,31 +166,23 @@
       </div>
       <div class="message-input">
         <div class="wrap">
-        <input id="chat-message-input" type="text" placeholder="Write your message..." />
-        <button>
-          <label>
-            <img src="/static/paperclip.png">
-            <span><input type='file' id="fileUpload" accept="file_extension|audio/*|video/*|image/*|media_type" name='file_input'/></span>
-          </label>
-        </button>
-        <div id="fileUpload" class="imagePreview" style="background-image: url(
-            {{ file.attachment.url }}
-            );">
-        </div>
-        <button id="chat-message-submit" class="submit" name="submit">
-          <i class="fa fa-paper-plane" aria-hidden="true"></i>
-        </button>
-        <!-- <button id="file-upload" class="submit">
-          <i class="fa fa-paperclip attachment" aria-hidden="true"></i> -->
-        <!-- </button> -->
-        <!-- <button id="chat-message-submit" class="submit">
-          <i class="fa fa-paper-plane" aria-hidden="true"></i>
-        </button> -->
+          <input id="chat-message-input" type="text" placeholder="Write your message..." />
+          <button>
+            <label>
+              <img src="/static/paperclip.png">
+              <span><input type='file' id="fileUpload" accept="file_extension|audio/*|video/*|image/*|media_type" name='file_input'/></span>
+            </label>
+          </button>
+          <div id="fileUpload" class="imagePreview" style="background-image: url(
+              {{ file.attachment.url }}
+              );">
+          </div>
+          <button id="chat-message-submit" class="submit" name="submit">
+            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+          </button>
         </div>
       </div>
     </div>
-  </div>
-  
 
 <script src="{% static 'main.js' %}"></script>
 <script src="{% static 'reconnecting-websocket.js' %}"></script>
@@ -195,7 +193,7 @@
     var chatSocket = new ReconnectingWebSocket(
         'ws://' + window.location.host +
         '/ws/chat/' + roomName + '/');
-
+        
     // chatSocket.binaryType = 'arraybuffer';
 
     chatSocket.onopen = function(e) {
@@ -204,6 +202,8 @@
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
+        document.getElementById("contacts").setAttribute('data-notification', data['notification_id']);
+
         if (data['command'] === 'messages') {
           for (let i=0; i<data['messages'].length; i++) {
             createMessage(data['messages'][i]);
@@ -223,21 +223,31 @@
         }
     };
 
-    document.querySelector('#chat-message-submit').onclick = function(e) {      // save File object, append filepath (eg. message.msg_file.url)  
-      uploadFile($("#fileUpload")[0]);
-      var messageInputDom = document.getElementById('chat-message-input');
-      var message = messageInputDom.value;
-      if (message == '') {
-        return
-      } else {
-          chatSocket.send(JSON.stringify({ 
-          'command': 'new_message',
-          'message': message,
-          'from': username,
-          'room_name': roomName,
-          'filepath': ''
+    document.querySelector('#chat-message-submit').onclick = function(e) {        // save File object, append filepath (eg. message.msg_file.url)  
+        uploadFile($("#fileUpload")[0]);
+        var messageInputDom = document.getElementById('chat-message-input');
+        var message = messageInputDom.value;
+        if (message == '') {
+          return
+        } else {
+            chatSocket.send(JSON.stringify({ 
+            'command': 'new_message',
+            'message': message,
+            'from': username,
+            'room_name': roomName,
+            'filepath': ''
+          }));
+        }
+      };
+
+    document.querySelector('#contacts').onclick = function(e) {
+        var notification_id = document.getElementById("contacts").getAttribute('data-notification');
+        chatSocket.send(JSON.stringify({
+            'command': 'notification_read',
+            'from': username,
+            'room_name': roomName,
+            'notification_id': Number(notification_id),
         }));
-      }
     };
 
     function filterSearch() {
@@ -259,7 +269,8 @@
     }
 
     function fetchMessages(username, roomName) {
-      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName }));
+      chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName}));
+      // document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
 
     function createMessage(data) {
@@ -328,7 +339,7 @@
       document.querySelector('#chat-log').appendChild(msgListTag);
       document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
-
+    
     function renderTimestamp(timestamp) {
       let prefix = "";
       var timeDiff = Math.round(
@@ -423,6 +434,7 @@
         reader.readAsDataURL(input.files[0]);
         }
     }
+
 </script>
 </body>
 
