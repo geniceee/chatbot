@@ -39,8 +39,8 @@
               </div>
             <div class="avatar-preview">
               <div id="profile-img" class="imagePreview" style="background-image: url(
-                  {% if contact.msg_file %}
-                    {{ contact.msg_file.url }}
+                  {% if contact.profile_photo %}
+                    {{ contact.profile_photo.url }}
                   {% else %}
                     {% static 'profile-icon.png' %}
                   {% endif %}
@@ -84,8 +84,8 @@
                 {% for person in chat.other_contacts %}
                 {% if person == contact %}
                 {% else %}
-                {% if person.msg_file %}
-                <img src= "{{ person.msg_file.url }}" alt="" />
+                {% if person.profile_photo %}
+                <img src= "{{ person.profile_photo.url }}" alt="" />
                 {% else %}
                 <img src= "{% static 'profile-icon.png' %}" alt="" />
                 {% endif %}
@@ -156,11 +156,19 @@
       <div class="message-input">
         <div class="wrap">
         <input id="chat-message-input" type="text" placeholder="Write your message..." />
-        <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
-        <button id="chat-message-submit" class="submit">
+        <button>
+          <label>
+            <img src="/static/paperclip.png">
+            <span><input type='file' id="fileUpload" accept="file_extension|audio/*|video/*|image/*|media_type" name='file_input'/></span>
+          </label>
+        </button>
+        <div id="fileUpload" class="imagePreview" style="background-image: url(
+            {{ file.attachment.url }}
+            );">
+        </div>
+        <button id="chat-message-submit" class="submit" name="submit">
           <i class="fa fa-paper-plane" aria-hidden="true"></i>
         </button>
-        </div>
       </div>
     </div>
   </div>

@@ -684,9 +684,24 @@ body {
     opacity: 1;
   }
   #frame .content .message-input .wrap button {
+    float: left;
+    border: none;
+    width: 40px;
+    height: 45px;
+    padding: 12px 0;
+    cursor: pointer;
+    background: #32465a;
+  }
+  #frame .content .message-input .wrap button label img {
+    width: 15px;
+    height: 17px;
+    color: #f5f5f5;
+  }
+  #frame .content .message-input .wrap #chat-message-submit{
     float: right;
     border: none;
     width: 50px;
+    height: 45px;
     padding: 12px 0;
     cursor: pointer;
     background: #32465a;

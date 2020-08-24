@@ -161,7 +161,12 @@
       <div class="message-input">
         <div class="wrap">
         <input id="chat-message-input" type="text" placeholder="Write your message..." />
-        <input type='file' id="fileUpload" accept="file_extension|audio/*|video/*|image/*|media_type" name='file_input'/>
+        <button>
+          <label>
+            <img src="/static/paperclip.png">
+            <span><input type='file' id="fileUpload" accept="file_extension|audio/*|video/*|image/*|media_type" name='file_input'/></span>
+          </label>
+        </button>
         <div id="fileUpload" class="imagePreview" style="background-image: url(
             {{ file.attachment.url }}
             );">
