@@ -154,6 +154,7 @@ def profile_photo(request):
 
 def upload_file(request):
     data=request.FILES.get('file')
+    fileName = data.name
     existing_ids = list(File.objects.values_list('id', flat=True).order_by('id'))
 
     for file_id in range(1, 100):
@@ -173,6 +174,7 @@ def upload_file(request):
 
     data = {
         'filepath' : file_obj.attachment.url,
+        'filename' : fileName
     }
 
     # print(data['filepath'])

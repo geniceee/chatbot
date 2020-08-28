@@ -24,7 +24,8 @@ class ChatConsumer(WebsocketConsumer):
         message = Message.objects.create(
             contact=author, 
             content=data['message'],
-            attachment=data['filepath'])
+            attachment=data['filepath'],
+            attachmentName = data['filename'])
 
         current_chat = get_current_chat(data['room_name'])
         current_chat.messages.add(message)
@@ -73,6 +74,7 @@ class ChatConsumer(WebsocketConsumer):
                 'author': message.contact.user.username,
                 'content': json.dumps(str(message.attachment)),
                 'timestamp': str(message.timestamp),
+                'attachmentName' : message.attachmentName
             }
 
     commands = {

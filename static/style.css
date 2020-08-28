@@ -498,29 +498,6 @@ body {
     display: none;
   }
 } */
-label.filebutton {
-  width:120px;
-  height:40px;
-  overflow:hidden;
-  position:relative;
-  background-color:#ccc;
-}
-
-label span input {
-  z-index: 999;
-  line-height: 0;
-  font-size: 50px;
-  position: absolute;
-  top: -2px;
-  left: -700px;
-  opacity: 0;
-  filter: alpha(opacity = 0);
-  -ms-filter: "alpha(opacity=0)";
-  cursor: pointer;
-  _cursor: hand;
-  margin: 0;
-  padding:0;
-}
 #frame .content {
   float: right;
   width: 60%;
@@ -730,11 +707,20 @@ label span input {
   cursor: pointer;
   background: #32465a;
 }
-#frame .content .message-input .wrap button label img {
+#filebutton {
+  float: left;
+  border: none;
+  width: 40px;
+  height: 45px;
+  padding: 12px 0;
+  cursor: pointer;
+  background: #32465a;
+}
+/* #frame .content .message-input .wrap button label img {
   width: 15px;
   height: 17px;
   color: #f5f5f5;
-}
+} */
 #frame .content .message-input .wrap #chat-message-submit{
   float: right;
   border: none;
