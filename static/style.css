@@ -548,8 +548,8 @@ body {
 } */
 #frame .content .messages {
   height: auto;
-  min-height: calc(100% - 93px);
-  max-height: calc(100% - 93px);
+  min-height: calc(100% - 145px);
+  max-height: calc(100% - 145px);
   overflow-y: scroll;
   overflow-x: hidden;
   width: 100%;
@@ -574,13 +574,13 @@ body {
   width: calc(100% - 25px);
   font-size: 0.9em;
 }
-#frame .content .messages ul li:nth-last-child(1) {
-  margin-bottom: 20px;
-}
+/* #frame .content .messages ul li:nth-last-child(1) {
+  margin-bottom: 10px;
+} */
 #frame .content .messages ul li.sent img {
   width: 40px;
   height: 40px;
-  margin: 2px 0 0 4px;
+  margin: 0px 2px 0px 8px;
   float: right;
 }
 #frame .content .messages ul li.sent p img {
@@ -606,7 +606,7 @@ body {
 #frame .content .messages ul li.replies img {
   width: 40px;
   height: 40px;
-  margin: 2px 4px 0 2px;
+  margin: 0px 8px 0px 2px;
   float: left;
   /* margin: 6px 0 0 8px; */
 }
