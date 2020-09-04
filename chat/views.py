@@ -39,10 +39,16 @@ def index(request):
     contact = get_user_contact(author)
     queryset = contact.chats.all()
 
+    if Notification.DoesNotExist:
+        notification_contact = None
+    else:
+        notification_contact = requested_chat.notifications.last().contact
+
     context = {
         'filtered_chats': queryset,
         'author': author,
         'contact': contact,
+        'notification_contact': notification_contact,
     }
 
     return render(request, 'chat/index.html', context=context)
@@ -92,8 +98,12 @@ def room(request, room_name):
 
     requested_chat = Chat.objects.get(id=room_name)
     query_participants = requested_chat.participants.all()
-    notification = Notification.objects.last()
 
+    if Notification.DoesNotExist:
+        notification_contact = None
+    else:
+        notification_contact = requested_chat.notifications.last().contact
+    
     context = {
         'room_name_json': mark_safe(json.dumps(room_name)),
         'username': mark_safe(json.dumps(request.user.username)),
@@ -101,7 +111,7 @@ def room(request, room_name):
         'author': author,
         'contact': contact,
         'participants': query_participants,
-        'notification': notification
+        'notification_contact': notification_contact,
     }
 
     return render(request, 'chat/room.html', context=context)

@@ -99,7 +99,10 @@
           {% for chat in filtered_chats %}
           <a href="{% url 'room' chat.id %}">
             <li class="contact">
+              {% if chat.num_notifications == 0 or notification_contact == contact %}
+              {% else %}
               <span class="badge">{{ chat.num_notifications }}</span>
+              {% endif %}
               <div class="wrap">
                 <!-- <span class="contact-status online"></span> -->
                 {% for person in chat.other_contacts %}

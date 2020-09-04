@@ -21,7 +21,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     attachment = models.FileField(blank=True,null=True,storage=FileSystemStorage())
     attachmentName = models.TextField(blank=True,null=True)
-    
+
     def __str__(self):
         return self.contact.user.username
 

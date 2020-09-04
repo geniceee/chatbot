@@ -45,11 +45,14 @@ class ChatConsumer(WebsocketConsumer):
 
     def notification_read(self, data):
         try:
+            author = get_user_contact(data['from'])
             notifications = get_current_notification(data['room_name'])
+            
             for notification in notifications:
-                notification.is_read = True
-                notification.save()
-                print('notification_read')
+                if notification.contact != author:
+                    notification.is_read = True
+                    notification.save()
+                    print('notification_read')
                 
         except Notification.DoesNotExist:
             notifications = None
@@ -74,7 +77,7 @@ class ChatConsumer(WebsocketConsumer):
                 'author': message.contact.user.username,
                 'content': json.dumps(str(message.attachment)),
                 'timestamp': str(message.timestamp),
-                'attachmentName' : message.attachmentName
+                'attachmentName' : message.attachmentName,
             }
 
     commands = {
