@@ -8,7 +8,6 @@ from django.http import HttpResponseRedirect
 from chatbot import settings
 import os
 from django.http import JsonResponse
-from django.contrib.auth.forms import UserCreationForm
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.shortcuts import redirect
@@ -99,11 +98,12 @@ def room(request, room_name):
     requested_chat = Chat.objects.get(id=room_name)
     query_participants = requested_chat.participants.all()
 
-    if Notification.DoesNotExist:
-        notification_contact = None
-    else:
+    try:
         notification_contact = requested_chat.notifications.last().contact
-    
+
+    except Notification.DoesNotExist:
+        notification_contact = None
+
     context = {
         'room_name_json': mark_safe(json.dumps(room_name)),
         'username': mark_safe(json.dumps(request.user.username)),
@@ -132,7 +132,7 @@ def all_users(request):
     return render(request, 'chat/all_users.html', context=context)
 
 
-def get_last_10_messages(room_name):
+def get_chat_messages(room_name):
     chat = get_object_or_404(Chat, id=room_name)
     return chat.messages.order_by('timestamp').all()
 

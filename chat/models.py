@@ -25,23 +25,6 @@ class Message(models.Model):
     def __str__(self):
         return self.contact.user.username
 
-    def render_timestamp(self):
-        prefix = ""
-        timeDiff = round(datetime.now.time() - self.timestamp.time() / 60000)
-
-        if timeDiff < 1:
-            prefix = "just now"
-        elif timeDiff < 60 and timeDiff > 1:
-            prefix = "{} minutes ago".format(timeDiff)
-        elif timeDiff < 24*60 and timeDiff > 60:
-            prefix = "{} hours ago".format(round(timeDiff / 60))
-        elif timeDiff < 31 * 24 * 60 and timeDiff > 24 * 60:
-            prefix = "{} days ago".format(round(timeDiff / (60 * 24)))
-        else:
-            prefix = str(self.timestamp)
-
-        return prefix
-
 class File(models.Model):
     attachment = models.FileField(blank=True,null=True,
         upload_to='attachment',storage=FileSystemStorage())
