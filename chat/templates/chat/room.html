@@ -31,28 +31,12 @@
         right: 20px;
       }
 
-      .options button {
-        float: right;
-        border: none;
-        height: 80px;
-        outline: none;
-        line-height: 80px;
-        background: #f5f5f5;
-        cursor: pointer;
-      }
-
-      /* .options button:hover {
-        outline: none;
-      } */
-
   </style> 
   </head>
   <div id="frame">
     <div id="sidepanel">
       <div id="profile">
         <div class="wrap">
-          <!-- <img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" /> -->
-          <!-- <img class="dropdown-menu dropdown-menu-right" aria-labelledby="dd3">                 -->
             <div class="avatar-upload cursor-default">
               <div class="avatar-edit">
                 <input type='file' id="imageupload" accept="file_extension|audio/*|video/*|image/*|media_type"/>
@@ -70,24 +54,6 @@
           </div>
           <p>{{author}}</p>
         </div>
-          <!-- <p>Mike Ross</p>
-          <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
-          <div id="status-options">
-            <ul>
-              <li id="status-online" class="active"><span class="status-circle"></span> <p>Online</p></li>
-              <li id="status-away"><span class="status-circle"></span> <p>Away</p></li>
-              <li id="status-busy"><span class="status-circle"></span> <p>Busy</p></li>
-              <li id="status-offline"><span class="status-circle"></span> <p>Offline</p></li>
-            </ul>
-          </div>
-          <div id="expanded">
-            <label for="twitter"><i class="fa fa-facebook fa-fw" aria-hidden="true"></i></label>
-            <input name="twitter" type="text" value="mikeross" />
-            <label for="twitter"><i class="fa fa-twitter fa-fw" aria-hidden="true"></i></label>
-            <input name="twitter" type="text" value="ross81" />
-            <label for="twitter"><i class="fa fa-instagram fa-fw" aria-hidden="true"></i></label>
-            <input name="twitter" type="text" value="mike.ross" />
-          </div> -->
         </div>
       </div>
       <div id="search">
@@ -127,26 +93,6 @@
               </div>
             </li></a>
           {% endfor %}
-          <!-- <li class="contact">
-            <div class="wrap">
-              <span class="contact-status online"></span>
-              <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" />
-              <div class="meta">
-                <p class="name">Louis Litt</p>
-                <p class="preview">You just got LITT up, Mike.</p>
-              </div>
-            </div>
-          </li>
-          <li class="contact active">
-            <div class="wrap">
-              <span class="contact-status busy"></span>
-              <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-              <div class="meta">
-                <p class="name">Harvey Specter</p>
-                <p class="preview">Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
-              </div>
-            </div>
-          </li> -->
         </ul>
       </div>
       <div id="bottom-bar">
@@ -170,26 +116,20 @@
         {% endif %}
         {% endif %}
         {% endfor %}
-        <!-- <span style="font-size:24px" class="fa">&#xf142;</span> -->
         <div class="options">
-          <button><i class="fa fa-ellipsis-v fa-lg" aria-hidden="true"></i></button>
+          <div class="dropdown" style="font-size: 16px;">
+            <button id='deletebutton' onclick="checkboxStatus()"><b>Delete</b></button>
+            <button class='dropbtn' id='dropbtnid'>
+              <i class="fa fa-ellipsis-v fa-lg" aria-hidden="true"></i>
+            </button>
+            <div id="myDropdown" class="dropdown-content">
+              <button id='select'>Select Message</button>
+            </div>
+          </div>
         </div>
-        <!-- <div class="social-media">
-          <i class="fa fa-facebook" aria-hidden="true"></i>
-          <i class="fa fa-twitter" aria-hidden="true"></i>
-          <i class="fa fa-instagram" aria-hidden="true"></i> -->
-        <!-- </div> -->
       </div>
       <div class="messages">
         <ul id="chat-log">
-          <!-- {% comment %} <li class="sent">
-            <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-            <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
-          </li>
-          <li class="replies">
-            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-            <p>When you're backed against the wall, break the god damn thing down.</p>
-          </li> {% endcomment %} -->
         </ul>
       </div>
       <div class="message-input">
@@ -252,8 +192,7 @@
         }
     };
 
-    document.querySelector('#chat-message-submit').onclick = function(e) {        // save File object, append filepath (eg. message.msg_file.url)  
-        // uploadFile($("#fileUpload")[0]);
+    document.querySelector('#chat-message-submit').onclick = function(e) {       
         var messageInputDom = document.getElementById('chat-message-input');
         var message = messageInputDom.value;
         if (message == '') {
@@ -282,6 +221,24 @@
         }));
     };
 
+    var dropbutton = document.getElementById('dropbtnid')
+    dropbutton.onclick =  function myFunction() {
+      document.getElementById("myDropdown").classList.toggle("show");
+    }
+
+    window.onclick = function(event) {
+      if (!event.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        var i;
+        for (i = 0; i < dropdowns.length; i++) {
+          var openDropdown = dropdowns[i];
+          if (openDropdown.classList.contains('show')) {
+            openDropdown.classList.remove('show');
+          }
+        }
+      }
+    }
+
     function filterSearch() {
       var input, filter, ul, li, a, i, txtValue;
       input = document.getElementById('myInput');
@@ -302,7 +259,6 @@
 
     function fetchMessages(username, roomName) {
       chatSocket.send(JSON.stringify({'command': 'fetch_messages', 'username': username, 'room_name': roomName}));
-      // document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
 
     function createMessage(data) {
@@ -312,9 +268,8 @@
       var imgTag = document.createElement('img');
       var pTag = document.createElement('p');
       var dateTag = document.createElement('SUB');
+      var popout = document.createElement('div');
       console.log("The new file name is : " + data.attachmentName);
-      // var deleteTag = document.createElement('ul');
-      // var liTag = document.createElement('li');
       dateTag.textContent = renderTimestamp(data.timestamp);
       supported_img_files = ['jpg', 'jpeg', 'png', 'webp'];
       supported_txt_files = ['doc', 'pdf', 'txt', 'docx', 'xlsx'];
@@ -366,12 +321,58 @@
         {% endif %}
         {% endfor %}
       }
+      popout.className = "myDIV";
+      popout.style.display = "none";
+      var checkboxDiv = document.createElement('div');
+      checkboxDiv.className = "custom-control custom-checkbox";
+      var checkboxInput = document.createElement('input');
+      checkboxInput.type = "checkbox";
+      checkboxInput.className = "custom-control-input";
+      var msg_id = data.id;
+      checkboxInput.id = msg_id;
+      var checkboxLabel = document.createElement('label');
+      checkboxLabel.className = "custom-control-label";
+      checkboxLabel.htmlFor = msg_id;
+      checkboxDiv.appendChild(checkboxInput);
+      checkboxDiv.appendChild(checkboxLabel);
+      popout.appendChild(checkboxDiv);
       msgListTag.appendChild(imgTag);
       msgListTag.appendChild(pTag);
+      msgListTag.appendChild(popout);
       document.querySelector('#chat-log').appendChild(msgListTag);
       document.querySelector('#chat-log').lastChild.scrollIntoView(false);
     }
     
+    var deletebutton = document.getElementById("deletebutton");
+    var select = document.getElementById("select");
+
+    select.onclick = function popoutFunction() {
+      deletebutton.style.display = "inline-block";
+      var x = document.getElementsByClassName("myDIV");
+      for (var i=0; i< x.length; i++) {
+        if (x[i].style.display == "none") {
+          x[i].style.display = "block";
+        } else {
+          x[i].style.display = "none";
+        }
+      }
+    }
+
+
+    function checkboxStatus() {
+      var checkedList = [];
+      var statusList = document.getElementsByClassName("custom-control-input")
+      for (s of statusList) {
+        if (s.checked == true) {
+          checkedList.push(s.id);
+        }
+      }
+      chatSocket.send(JSON.stringify({ 
+        'command': 'delete_message',
+        'checked_list': checkedList,
+      }));
+    }
+
     function renderTimestamp(timestamp) {
       let prefix = "";
       var timeDiff = Math.round(
@@ -413,8 +414,8 @@
           url: url,                    
           data: fd,
           cache: false,
-          contentType: false, // Must put to parse csrf_token via ajax
-          processData: false, // Must put to parse csrf_token via ajax
+          contentType: false, 
+          processData: false, 
           success: function (data) {
           }
         });
@@ -445,8 +446,8 @@
             url: url,                    
             data: fd,
             cache: false,
-            contentType: false, // Must put to parse csrf_token via ajax
-            processData: false, // Must put to parse csrf_token via ajax
+            contentType: false, 
+            processData: false, 
             success: function (data) {
               var filepath = data['filepath']
               var filename = data['filename']

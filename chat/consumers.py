@@ -39,8 +39,6 @@ class ChatConsumer(WebsocketConsumer):
             'message': self.message_to_json(message),
             'notification_id': notification.id,
         }
-
-        print(content)
         return self.send_chat_message(content)
 
     def notification_read(self, data):
@@ -80,10 +78,17 @@ class ChatConsumer(WebsocketConsumer):
                 'attachmentName' : message.attachmentName,
             }
 
+    def delete_message(self, data):
+        msg_to_delete = data['checked_list']
+        for msg_id in msg_to_delete:
+            msg = Message.objects.get(id=msg_id)
+            msg.delete()
+
     commands = {
         'fetch_messages': fetch_messages,
         'new_message': new_message,
         'notification_read': notification_read,
+        'delete_message': delete_message,
     }
 
     def connect(self):
