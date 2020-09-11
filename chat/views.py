@@ -90,7 +90,7 @@ def room(request, room_name):
     try:
         notification_contact = requested_chat.notifications.last().contact
 
-    except Notification.DoesNotExist:
+    except: #Notification.DoesNotExist:
         notification_contact = None
 
     context = {
